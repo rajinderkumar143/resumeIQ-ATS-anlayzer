@@ -1,0 +1,25 @@
+{
+  "name": "resumeiq-ai-monorepo",
+  "version": "1.0.0",
+  "description": "ResumeIQ AI — Production-Ready ATS Resume Analyzer and AI Career Suite",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "start:server": "cd server && npm start",
+    "build:client": "cd client && npm run build"
+  },
+  "keywords": [
+    "ats",
+    "resume-analyzer",
+    "react",
+    "express",
+    "prisma",
+    "gemini-ai"
+  ],
+  "author": "ResumeIQ Team",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}

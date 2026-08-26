@@ -1,0 +1,123 @@
+// Prisma Schema for ResumeIQ AI
+// Production database configuration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Set to "postgresql" for production deployment (e.g. Neon, Render, Supabase)
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String           @id @default(uuid())
+  email            String           @unique
+  passwordHash     String
+  name             String
+  role             String           @default("user") // "user" | "admin"
+  targetJobTitle   String?
+  preferredIndustry String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  resumes          Resume[]
+  jobDescriptions  JobDescription[]
+  analyses         AtsAnalysis[]
+  coverLetters     CoverLetter[]
+  interviewPreps   InterviewPrep[]
+}
+
+model Resume {
+  id          String   @id @default(uuid())
+  userId      String
+  fileName    String
+  fileType    String   // "pdf" | "docx"
+  fileSize    Int
+  rawText     String
+  parsedData  String   // JSON string containing contact, skills, experience, education, projects
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses    AtsAnalysis[]
+  coverLetters CoverLetter[]
+  interviewPreps InterviewPrep[]
+
+  @@index([userId])
+}
+
+model JobDescription {
+  id                String   @id @default(uuid())
+  userId            String
+  title             String
+  company           String?
+  rawText           String
+  extractedKeywords String   // JSON string of detected skills and requirements
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses          AtsAnalysis[]
+  coverLetters      CoverLetter[]
+  interviewPreps    InterviewPrep[]
+
+  @@index([userId])
+}
+
+model AtsAnalysis {
+  id               String   @id @default(uuid())
+  userId           String
+  resumeId         String
+  jobDescriptionId String?
+  overallScore     Float    // 0 - 100
+  skillScore       Float    // 0 - 100
+  formattingScore  Float    // 0 - 100
+  impactScore      Float    // 0 - 100
+  experienceScore  Float    // 0 - 100
+  matchedKeywords  String   // JSON array of strings
+  missingKeywords  String   // JSON array of strings
+  sectionScores    String   // JSON object with section-by-section breakdown
+  aiSuggestions    String?  // JSON object or markdown suggestions
+  createdAt        DateTime @default(now())
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume           Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  jobDescription   JobDescription? @relation(fields: [jobDescriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model CoverLetter {
+  id               String   @id @default(uuid())
+  userId           String
+  resumeId         String?
+  jobDescriptionId String?
+  title            String   @default("Generated Cover Letter")
+  content          String
+  tone             String   @default("professional") // "professional" | "confident" | "conversational"
+  createdAt        DateTime @default(now())
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume           Resume?         @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  jobDescription   JobDescription? @relation(fields: [jobDescriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+model InterviewPrep {
+  id               String   @id @default(uuid())
+  userId           String
+  resumeId         String?
+  jobDescriptionId String?
+  roleTitle        String   @default("Target Role")
+  questions        String   // JSON array of { question, category, starTip, sampleAnswer }
+  createdAt        DateTime @default(now())
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume           Resume?         @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  jobDescription   JobDescription? @relation(fields: [jobDescriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
