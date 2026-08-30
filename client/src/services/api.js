@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://resume-iq-ats-anlayzer-xt5y.vercel.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
